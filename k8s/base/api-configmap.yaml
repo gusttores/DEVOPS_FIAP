@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: govambiental-api-config
+  labels:
+    app.kubernetes.io/name: govambiental-api
+    app.kubernetes.io/part-of: govambiental
+data:
+  # Configuração não sensível. O ASP.NET Core lê "Jwt:Issuer" a partir da
+  # variável de ambiente "Jwt__Issuer" (duplo underline = separador de seção).
+  ASPNETCORE_URLS: "http://+:8080"
+  Jwt__Issuer: "GovAmbiental.API"
+  Jwt__Audience: "GovAmbiental.Clients"
+  AuthCredentials__Email: "auditor@govambiental.com"
+  Logging__LogLevel__Default: "Information"

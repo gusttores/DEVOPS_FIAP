@@ -1,0 +1,55 @@
+# =============================================================================
+# Validação dos manifests Kubernetes
+# Roda o kustomize build dos dois overlays e valida os manifests gerados
+# contra os schemas oficiais do Kubernetes (kubeconform).
+# =============================================================================
+name: Validação dos manifests Kubernetes
+
+on:
+  push:
+    paths:
+      - "k8s/**"
+      - ".github/workflows/k8s-validate.yml"
+  pull_request:
+    paths:
+      - "k8s/**"
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: kustomize build + kubeconform
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    strategy:
+      matrix:
+        overlay: [staging, production]
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Instalar kubeconform
+        run: |
+          curl -sSfL https://github.com/yannh/kubeconform/releases/download/v0.6.7/kubeconform-linux-amd64.tar.gz \
+            | tar -xz -C /usr/local/bin kubeconform
+          kubeconform -v
+
+      - name: Renderizar o overlay ${{ matrix.overlay }}
+        run: |
+          kubectl kustomize "k8s/overlays/${{ matrix.overlay }}" > "rendered-${{ matrix.overlay }}.yaml"
+          echo "----- primeiras linhas do manifest gerado -----"
+          head -40 "rendered-${{ matrix.overlay }}.yaml"
+
+      - name: Validar contra os schemas do Kubernetes
+        run: |
+          kubeconform -strict -summary -ignore-missing-schemas \
+            -kubernetes-version 1.29.0 \
+            "rendered-${{ matrix.overlay }}.yaml"
+
+      - name: Guardar o manifest renderizado
+        uses: actions/upload-artifact@v4
+        with:
+          name: manifests-${{ matrix.overlay }}
+          path: rendered-${{ matrix.overlay }}.yaml
+          retention-days: 15

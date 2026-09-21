@@ -1,0 +1,354 @@
+# =============================================================================
+# Pipeline CI/CD — GovAmbiental.API (.NET 8 + Docker + GHCR)
+#
+#   build-and-test  ->  docker-image  ->  deploy-staging  ->  deploy-production
+#
+# * build-and-test .... restaura, compila e roda os testes xUnit (com cobertura)
+# * docker-image ...... constrói a imagem multi-stage e publica no GHCR
+# * deploy-staging .... sobe a stack de staging (compose) a partir da imagem
+#                       publicada e valida com smoke tests (porta 8081)
+# * deploy-production . mesmo fluxo na porta 8080, com aprovação manual
+#                       (GitHub Environment "production") e rollback automático
+# =============================================================================
+name: CI/CD - GovAmbiental API
+
+on:
+  push:
+    branches: [main, develop]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  DOTNET_VERSION: "8.0.x"
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository_owner }}/govambiental-api
+  SOLUTION: GovAmbiental.sln
+  TEST_PROJECT: tests/GovAmbiental.Tests/GovAmbiental.Tests.csproj
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # 1) BUILD + TESTES AUTOMATIZADOS
+  # ---------------------------------------------------------------------------
+  build-and-test:
+    name: Build e testes automatizados
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      checks: write        # necessário para publicar o relatório de testes
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Instalar .NET SDK ${{ env.DOTNET_VERSION }}
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Cache de pacotes NuGet
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.csproj') }}
+          restore-keys: nuget-${{ runner.os }}-
+
+      - name: Restaurar dependências
+        run: dotnet restore "$SOLUTION"
+
+      - name: Compilar (Release)
+        run: dotnet build "$SOLUTION" --configuration Release --no-restore
+
+      - name: Executar testes xUnit
+        run: |
+          dotnet test "$TEST_PROJECT" \
+            --configuration Release --no-build \
+            --logger "trx;LogFileName=test-results.trx" \
+            --logger "console;verbosity=normal" \
+            --results-directory ./TestResults \
+            --collect:"XPlat Code Coverage"
+
+      - name: Publicar relatório de testes no resumo do job
+        if: always()
+        uses: dorny/test-reporter@v1
+        with:
+          name: Testes xUnit
+          path: TestResults/**/*.trx
+          reporter: dotnet-trx
+          fail-on-error: false
+
+      - name: Guardar resultados dos testes como artefato
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: resultados-testes
+          path: TestResults/
+          retention-days: 15
+
+      - name: Publicar artefato da aplicação
+        run: dotnet publish src/GovAmbiental.API/GovAmbiental.API.csproj -c Release -o ./publish /p:UseAppHost=false
+
+      - name: Guardar binários publicados
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-publish
+          path: ./publish
+          retention-days: 7
+
+  # ---------------------------------------------------------------------------
+  # 2) BUILD DA IMAGEM DOCKER + PUBLICAÇÃO NO GHCR
+  # ---------------------------------------------------------------------------
+  docker-image:
+    name: Build e push da imagem Docker
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    if: github.event_name != 'pull_request'
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+
+    outputs:
+      image: ${{ steps.meta.outputs.tags }}
+      version: ${{ steps.meta.outputs.version }}
+      digest: ${{ steps.build.outputs.digest }}
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Autenticar no GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Gerar tags e labels da imagem
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=sha,format=short
+            type=ref,event=branch
+            type=semver,pattern={{version}}
+            type=raw,value=staging,enable=${{ github.ref == 'refs/heads/main' }}
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - name: Construir e publicar a imagem
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          target: final
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            APP_VERSION=${{ steps.meta.outputs.version }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Resumo da imagem publicada
+        run: |
+          {
+            echo "### Imagem Docker publicada"
+            echo ""
+            echo "| Item | Valor |"
+            echo "|---|---|"
+            echo "| Registry | \`${{ env.REGISTRY }}\` |"
+            echo "| Imagem | \`${{ env.IMAGE_NAME }}\` |"
+            echo "| Versão | \`${{ steps.meta.outputs.version }}\` |"
+            echo "| Digest | \`${{ steps.build.outputs.digest }}\` |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  # ---------------------------------------------------------------------------
+  # 3) DEPLOY EM STAGING (porta 8081)
+  # ---------------------------------------------------------------------------
+  deploy-staging:
+    name: Deploy em STAGING
+    runs-on: ubuntu-latest
+    needs: docker-image
+    if: github.event_name != 'pull_request'
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: read
+    environment:
+      name: staging
+      url: http://localhost:8081/swagger
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Autenticar no GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Gerar arquivo de ambiente (.env.staging)
+        run: |
+          cat > .env.staging <<EOF
+          IMAGE_NAME=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          IMAGE_TAG=${{ needs.docker-image.outputs.version }}
+          PULL_POLICY=always
+          DB_PLATFORM=linux/amd64
+          DB_NAME=GovAmbientalDb_Staging
+          API_PORT=8081
+          SA_PASSWORD=${{ secrets.SA_PASSWORD || 'Gov@mbiental2026' }}
+          JWT_KEY=${{ secrets.JWT_KEY || 'chave-super-secreta-gov-ambiental-fiap-2026-minimo-32-bytes!' }}
+          JWT_ISSUER=GovAmbiental.API
+          JWT_AUDIENCE=GovAmbiental.Clients
+          AUTH_EMAIL=auditor@govambiental.com
+          AUTH_PASSWORD=${{ secrets.AUTH_PASSWORD || 'Auditor@123' }}
+          EOF
+
+      - name: Subir a stack de staging
+        run: |
+          docker compose --env-file .env.staging -f docker-compose.staging.yml up -d
+          docker compose --env-file .env.staging -f docker-compose.staging.yml ps
+
+      - name: Aguardar a API ficar saudável
+        run: ./scripts/wait-for-health.sh http://localhost:8081 240
+
+      - name: Smoke tests (staging)
+        run: ./scripts/smoke-test.sh http://localhost:8081
+
+      - name: Coletar logs dos containers
+        if: always()
+        run: |
+          mkdir -p evidencias
+          docker compose --env-file .env.staging -f docker-compose.staging.yml ps    > evidencias/staging-ps.txt
+          docker compose --env-file .env.staging -f docker-compose.staging.yml logs --no-color > evidencias/staging-logs.txt
+          curl -s http://localhost:8081/health | tee evidencias/staging-health.json || true
+
+      - name: Guardar evidências de staging
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evidencias-staging
+          path: evidencias/
+          retention-days: 15
+
+      - name: Resumo do deploy
+        if: always()
+        run: |
+          {
+            echo "### Deploy em STAGING"
+            echo ""
+            echo "- Imagem: \`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.docker-image.outputs.version }}\`"
+            echo "- URL: http://localhost:8081/swagger"
+            echo "- Status: ${{ job.status }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Derrubar a stack
+        if: always()
+        run: docker compose --env-file .env.staging -f docker-compose.staging.yml down -v
+
+  # ---------------------------------------------------------------------------
+  # 4) DEPLOY EM PRODUÇÃO (porta 8080) — exige aprovação no Environment
+  # ---------------------------------------------------------------------------
+  deploy-production:
+    name: Deploy em PRODUÇÃO
+    runs-on: ubuntu-latest
+    needs: [docker-image, deploy-staging]
+    if: github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v')
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: read
+    environment:
+      name: production
+      url: http://localhost:8080/swagger
+
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Autenticar no GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Gerar arquivo de ambiente (.env.prod)
+        run: |
+          cat > .env.prod <<EOF
+          IMAGE_NAME=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          IMAGE_TAG=${{ needs.docker-image.outputs.version }}
+          PULL_POLICY=always
+          DB_PLATFORM=linux/amd64
+          DB_NAME=GovAmbientalDb
+          API_PORT=8080
+          SA_PASSWORD=${{ secrets.SA_PASSWORD || 'Gov@mbiental2026' }}
+          JWT_KEY=${{ secrets.JWT_KEY || 'chave-super-secreta-gov-ambiental-fiap-2026-minimo-32-bytes!' }}
+          JWT_ISSUER=GovAmbiental.API
+          JWT_AUDIENCE=GovAmbiental.Clients
+          AUTH_EMAIL=auditor@govambiental.com
+          AUTH_PASSWORD=${{ secrets.AUTH_PASSWORD || 'Auditor@123' }}
+          EOF
+
+      - name: Subir a stack de produção
+        run: |
+          docker compose --env-file .env.prod -f docker-compose.prod.yml up -d
+          docker compose --env-file .env.prod -f docker-compose.prod.yml ps
+
+      - name: Aguardar a API ficar saudável
+        run: ./scripts/wait-for-health.sh http://localhost:8080 240
+
+      - name: Smoke tests (produção)
+        run: ./scripts/smoke-test.sh http://localhost:8080
+
+      - name: Rollback automático em caso de falha
+        if: failure()
+        run: |
+          echo "::error::Smoke tests falharam em produção — revertendo para a última imagem estável (latest)."
+          sed -i "s/^IMAGE_TAG=.*/IMAGE_TAG=latest/" .env.prod
+          docker compose --env-file .env.prod -f docker-compose.prod.yml up -d --force-recreate api
+          ./scripts/wait-for-health.sh http://localhost:8080 240 || true
+
+      - name: Coletar logs dos containers
+        if: always()
+        run: |
+          mkdir -p evidencias
+          docker compose --env-file .env.prod -f docker-compose.prod.yml ps   > evidencias/producao-ps.txt
+          docker compose --env-file .env.prod -f docker-compose.prod.yml logs --no-color > evidencias/producao-logs.txt
+          curl -s http://localhost:8080/health | tee evidencias/producao-health.json || true
+
+      - name: Guardar evidências de produção
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evidencias-producao
+          path: evidencias/
+          retention-days: 30
+
+      - name: Resumo do deploy
+        if: always()
+        run: |
+          {
+            echo "### Deploy em PRODUÇÃO"
+            echo ""
+            echo "- Imagem: \`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.docker-image.outputs.version }}\`"
+            echo "- URL: http://localhost:8080/swagger"
+            echo "- Status: ${{ job.status }}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Derrubar a stack
+        if: always()
+        run: docker compose --env-file .env.prod -f docker-compose.prod.yml down -v

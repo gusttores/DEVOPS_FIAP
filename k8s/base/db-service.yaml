@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: govambiental-db
+  labels:
+    app.kubernetes.io/name: govambiental-db
+    app.kubernetes.io/part-of: govambiental
+spec:
+  # Headless: o pod é resolvido pelo DNS interno (govambiental-db:1433).
+  clusterIP: None
+  ports:
+    - name: mssql
+      port: 1433
+      targetPort: 1433
+  selector:
+    app.kubernetes.io/name: govambiental-db

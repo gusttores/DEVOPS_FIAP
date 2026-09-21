@@ -1,0 +1,35 @@
+## .NET
+bin/
+obj/
+out/
+*.user
+*.suo
+.vs/
+.vscode/
+
+## Build results
+[Dd]ebug/
+[Rr]elease/
+publish/
+
+## Rider / Resharper
+.idea/
+
+## macOS
+.DS_Store
+
+## App
+appsettings.*.local.json
+
+## Ambiente (DevOps)
+.env
+.env.*
+!.env.example
+TestResults/
+coverage/
+*.trx
+docs/evidencias/*.tmp
+
+## Pacotes de entrega (gerados)
+entrega/
+entrega.zip

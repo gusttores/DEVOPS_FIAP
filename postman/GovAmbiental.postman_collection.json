@@ -1,0 +1,174 @@
+{
+  "info": {
+    "name": "GovAmbiental - Conformidade e Auditoria Ambiental",
+    "description": "Coleção de endpoints da API de Governança e Compliance Ambiental (ESG / .NET 8). Faça o Login primeiro: o token JWT é salvo automaticamente na variável {{token}}.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      { "key": "token", "value": "{{token}}", "type": "string" }
+    ]
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:5099" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login (salva token)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/auth/login", "host": ["{{baseUrl}}"], "path": ["api", "auth", "login"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"auditor@govambiental.com\",\n  \"senha\": \"Auditor@123\"\n}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('status 200', function () { pm.response.to.have.status(200); });",
+                  "var json = pm.response.json();",
+                  "if (json && json.token) {",
+                  "  pm.collectionVariables.set('token', json.token);",
+                  "  console.log('Token salvo na variável {{token}}.');",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Normas",
+      "item": [
+        {
+          "name": "Listar normas (paginado)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/normas?pageNumber=1&pageSize=10&categoria=Agua",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "normas"],
+              "query": [
+                { "key": "pageNumber", "value": "1" },
+                { "key": "pageSize", "value": "10" },
+                { "key": "categoria", "value": "Agua" },
+                { "key": "orgaoEmissor", "value": "", "disabled": true },
+                { "key": "ativa", "value": "true", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Criar norma (auth)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/normas", "host": ["{{baseUrl}}"], "path": ["api", "normas"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"codigo\": \"CONAMA 357/2005\",\n  \"titulo\": \"Classificação de corpos d'água\",\n  \"descricao\": \"Dispõe sobre a classificação dos corpos de água.\",\n  \"categoria\": \"RecursosHidricos\",\n  \"orgaoEmissor\": \"CONAMA\",\n  \"dataVigencia\": \"2005-03-17T00:00:00Z\",\n  \"requisitos\": [\n    { \"descricao\": \"Enquadramento do corpo hídrico definido\", \"peso\": 3, \"criticidade\": \"Alta\" },\n    { \"descricao\": \"Monitoramento trimestral de parâmetros\", \"peso\": 2, \"criticidade\": \"Media\" }\n  ]\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auditorias",
+      "item": [
+        {
+          "name": "Listar auditorias (paginado)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/auditorias?pageNumber=1&pageSize=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auditorias"],
+              "query": [
+                { "key": "pageNumber", "value": "1" },
+                { "key": "pageSize", "value": "10" },
+                { "key": "status", "value": "Concluida", "disabled": true },
+                { "key": "unidadeOperacional", "value": "", "disabled": true }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Criar auditoria (auth)",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/auditorias", "host": ["{{baseUrl}}"], "path": ["api", "auditorias"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Auditoria Resíduos - Planta Norte\",\n  \"unidadeOperacional\": \"Planta Industrial Norte\",\n  \"responsavel\": \"Equipe SGA\",\n  \"dataInicio\": \"2026-06-19T00:00:00Z\",\n  \"normaIds\": [3]\n}"
+            }
+          }
+        },
+        {
+          "name": "Avaliar auditoria (auth) - motor automático",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/api/auditorias/2/avaliar", "host": ["{{baseUrl}}"], "path": ["api", "auditorias", "2", "avaliar"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"itens\": [\n    { \"requisitoNormaId\": 6, \"atendido\": true, \"evidencia\": \"checklist-segregacao.pdf\" },\n    { \"requisitoNormaId\": 7, \"atendido\": false, \"observacao\": \"Manifesto vencido\" },\n    { \"requisitoNormaId\": 8, \"atendido\": true }\n  ]\n}"
+            }
+          },
+          "description": "Ajuste o id da auditoria na URL e os requisitoNormaId conforme a norma usada na criação."
+        },
+        {
+          "name": "Relatório da auditoria",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/auditorias/1/relatorio", "host": ["{{baseUrl}}"], "path": ["api", "auditorias", "1", "relatorio"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Conformidade",
+      "item": [
+        {
+          "name": "Indicadores (auth)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/api/conformidade/indicadores", "host": ["{{baseUrl}}"], "path": ["api", "conformidade", "indicadores"] }
+          }
+        },
+        {
+          "name": "Não-conformidades (paginado + alertas)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/conformidade/nao-conformidades?pageNumber=1&pageSize=10&apenasVencidas=false",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "conformidade", "nao-conformidades"],
+              "query": [
+                { "key": "pageNumber", "value": "1" },
+                { "key": "pageSize", "value": "10" },
+                { "key": "apenasVencidas", "value": "false" }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

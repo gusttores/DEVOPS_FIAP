@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: govambiental-api
+spec:
+  # Produção roda com 2 réplicas para permitir rolling update sem indisponibilidade.
+  replicas: 2
+  template:
+    spec:
+      # Espalha as réplicas entre nós diferentes quando o cluster permite.
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: govambiental-api
+      containers:
+        - name: api
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: "Production"
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "1"
+              memory: "768Mi"

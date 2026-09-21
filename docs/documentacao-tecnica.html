@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Documentação Técnica — DevOps · GovAmbiental API</title>
+<style>
+  @page { size: A4; margin: 16mm 14mm 14mm 14mm; }
+
+  :root{
+    --verde:#0f5132;
+    --verde-claro:#198754;
+    --verde-suave:#e8f3ec;
+    --cinza:#4a5568;
+    --cinza-claro:#edf0f3;
+    --borda:#d6dde3;
+    --azul:#1d4ed8;
+    --ambar:#b45309;
+  }
+
+  *{ box-sizing:border-box; }
+
+  body{
+    font-family:"Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size:10.2pt;
+    line-height:1.5;
+    color:#1a202c;
+    margin:0;
+  }
+
+  h1,h2,h3{ color:var(--verde); line-height:1.25; }
+  h2{
+    font-size:15pt;
+    margin:0 0 10px;
+    padding-bottom:6px;
+    border-bottom:2.5px solid var(--verde-claro);
+  }
+  h3{ font-size:11.5pt; margin:16px 0 6px; }
+  h4{ font-size:10.4pt; margin:12px 0 4px; color:var(--cinza); }
+  p{ margin:0 0 8px; text-align:justify; }
+
+  section{ page-break-before:always; }
+  section.primeira{ page-break-before:avoid; }
+  .evitar-quebra{ page-break-inside:avoid; }
+
+  /* ---------- Capa ---------- */
+  .capa{
+    height:250mm;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    text-align:center;
+    page-break-after:always;
+  }
+  .capa .selo{
+    font-size:9pt;
+    letter-spacing:2.5px;
+    text-transform:uppercase;
+    color:var(--verde-claro);
+    font-weight:700;
+    margin-bottom:10px;
+  }
+  .capa h1{
+    font-size:27pt;
+    margin:0 0 6px;
+    letter-spacing:-0.5px;
+  }
+  .capa .subtitulo{
+    font-size:13pt;
+    color:var(--cinza);
+    margin-bottom:26px;
+  }
+  .capa .regua{
+    width:70mm; height:3px;
+    background:var(--verde-claro);
+    margin:0 auto 26px;
+  }
+  .ficha{
+    margin:0 auto;
+    border-collapse:collapse;
+    width:125mm;
+    font-size:10pt;
+  }
+  .ficha td{
+    border:1px solid var(--borda);
+    padding:8px 12px;
+    text-align:left;
+  }
+  .ficha td:first-child{
+    background:var(--verde-suave);
+    font-weight:600;
+    color:var(--verde);
+    width:42mm;
+  }
+  .capa .rodape{
+    margin-top:30px;
+    font-size:9pt;
+    color:var(--cinza);
+  }
+
+  /* ---------- Tabelas ---------- */
+  table.dados{
+    width:100%;
+    border-collapse:collapse;
+    font-size:8.9pt;
+    margin:8px 0 14px;
+  }
+  table.dados tr{ page-break-inside:avoid; }
+  table.dados th{
+    background:var(--verde);
+    color:#fff;
+    text-align:left;
+    padding:6px 8px;
+    font-weight:600;
+  }
+  table.dados td{
+    border:1px solid var(--borda);
+    padding:6px 8px;
+    vertical-align:top;
+  }
+  table.dados tr:nth-child(even) td{ background:#fafbfc; }
+  table.dados td.centro, table.dados th.centro{ text-align:center; }
+
+  /* ---------- Código ---------- */
+  pre{
+    background:#1b2430;
+    color:#e6edf3;
+    padding:10px 12px;
+    border-radius:5px;
+    font-family:"SF Mono", Consolas, "Courier New", monospace;
+    font-size:8.1pt;
+    line-height:1.45;
+    overflow:hidden;
+    white-space:pre-wrap;
+    word-break:break-word;
+    page-break-inside:avoid;
+    margin:6px 0 12px;
+  }
+  pre .c{ color:#8b98a5; }
+  pre .k{ color:#7ee787; }
+  code{
+    font-family:"SF Mono", Consolas, "Courier New", monospace;
+    font-size:8.8pt;
+    background:var(--cinza-claro);
+    padding:1px 4px;
+    border-radius:3px;
+  }
+
+  /* ---------- Blocos ---------- */
+  .nota{
+    border-left:4px solid var(--verde-claro);
+    background:var(--verde-suave);
+    padding:8px 12px;
+    margin:10px 0;
+    font-size:9.4pt;
+    page-break-inside:avoid;
+  }
+  .nota.alerta{ border-left-color:var(--ambar); background:#fdf6ec; }
+
+  .fluxo{
+    background:#f7f9fa;
+    border:1px solid var(--borda);
+    border-radius:6px;
+    padding:12px;
+    font-family:"SF Mono", Consolas, monospace;
+    font-size:7.1pt;
+    line-height:1.42;
+    white-space:pre;
+    page-break-inside:avoid;
+    margin:10px 0 14px;
+    color:#233;
+  }
+
+  .etapa{
+    border:1px solid var(--borda);
+    border-left:5px solid var(--verde-claro);
+    border-radius:5px;
+    padding:10px 12px;
+    margin:10px 0;
+    page-break-inside:avoid;
+  }
+  .etapa .titulo{
+    font-weight:700;
+    color:var(--verde);
+    font-size:10.6pt;
+    margin-bottom:4px;
+  }
+  .etapa ul{ margin:4px 0 0 16px; padding:0; }
+  .etapa li{ margin-bottom:3px; }
+
+  ul.lista{ margin:4px 0 10px 18px; padding:0; }
+  ul.lista li{ margin-bottom:4px; }
+
+  /* ---------- Evidências ---------- */
+  figure.evidencia{
+    margin:0 0 16px;
+    page-break-inside:avoid;
+  }
+  figure.evidencia figcaption{
+    font-size:9.2pt;
+    font-weight:600;
+    color:var(--verde);
+    margin-bottom:5px;
+  }
+  figure.evidencia .como{
+    font-size:8.6pt;
+    color:var(--cinza);
+    margin-bottom:5px;
+  }
+  figure.evidencia img{
+    width:100%;
+    border:1px solid var(--borda);
+    border-radius:4px;
+  }
+  .placeholder{
+    border:1.5px dashed #b6c2cc;
+    border-radius:5px;
+    background:#f8fafb;
+    color:#8795a1;
+    text-align:center;
+    padding:26px 12px;
+    font-size:9pt;
+  }
+  .placeholder .arquivo{
+    display:inline-block;
+    margin-top:6px;
+    font-family:"SF Mono", Consolas, monospace;
+    font-size:8.2pt;
+    background:#eef2f5;
+    border-radius:3px;
+    padding:2px 6px;
+    color:#54616c;
+  }
+
+  .ok{ color:var(--verde-claro); font-weight:700; }
+  .rodape-doc{
+    margin-top:18px;
+    padding-top:8px;
+    border-top:1px solid var(--borda);
+    font-size:8.4pt;
+    color:var(--cinza);
+    text-align:center;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================ CAPA ============================ -->
+<div class="capa">
+  <div class="selo">FIAP · Navegando pelo mundo DevOps</div>
+  <h1>API de Governança e<br>Compliance Ambiental</h1>
+  <div class="subtitulo">Automação completa do ciclo de vida da aplicação<br>com CI/CD, Docker e Kubernetes</div>
+  <div class="regua"></div>
+
+  <table class="ficha">
+    <tr><td>Integrante</td><td>Gustavo Silva Torres — RM564909</td></tr>
+    <tr><td>Tema ESG</td><td>Governança e compliance ambiental</td></tr>
+    <tr><td>Aplicação base</td><td>Web API em C# / ASP.NET Core 8 (desafio anterior)</td></tr>
+    <tr><td>Ferramenta CI/CD</td><td>GitHub Actions + GitHub Container Registry</td></tr>
+    <tr><td>Containerização</td><td>Docker multi-stage · Docker Compose · Kubernetes (Kustomize)</td></tr>
+    <tr><td>Ambientes</td><td>Staging (porta 8081) e Produção (porta 8080)</td></tr>
+    <tr><td>Repositório</td><td>github.com/&lt;SEU-USUARIO&gt;/govambiental-devops</td></tr>
+  </table>
+
+  <div class="rodape">Documentação técnica da entrega — setembro de 2026</div>
+</div>
+
+<!-- ============================ 1 ============================ -->
+<section class="primeira">
+  <h2>1. Visão geral do projeto</h2>
+
+  <p>A aplicação é uma <strong>API RESTful de governança e compliance ambiental</strong>,
+  construída em ASP.NET Core 8 no desafio anterior. Ela registra normas ambientais,
+  planeja auditorias internas e executa um <strong>motor de avaliação automática</strong>:
+  ao receber as evidências de uma auditoria, calcula um score ponderado de conformidade,
+  classifica o resultado e gera as não-conformidades com seus planos de ação e prazos.</p>
+
+  <p>Nesta fase, o objetivo deixa de ser a regra de negócio e passa a ser o
+  <strong>ciclo de vida da aplicação</strong>: garantir que qualquer mudança de código
+  seja compilada, testada, empacotada e implantada em dois ambientes
+  <strong>sem intervenção manual</strong> — com um único ponto de decisão humana,
+  a aprovação para produção.</p>
+
+  <h3>1.1 O que a aplicação entrega</h3>
+  <table class="dados">
+    <tr><th style="width:32%">Característica</th><th>Implementação</th></tr>
+    <tr><td>Endpoints REST</td><td>9 endpoints em 4 controllers (Auth, Normas, Auditorias, Conformidade)</td></tr>
+    <tr><td>Arquitetura</td><td>MVVM — <code>Models</code> · <code>ViewModels</code> · <code>Controllers</code>/<code>Services</code></td></tr>
+    <tr><td>Segurança</td><td>JWT Bearer com <code>[Authorize(Roles="Auditor")]</code> nos endpoints críticos</td></tr>
+    <tr><td>Validação e erros</td><td>FluentValidation + filtro global · middleware de exceções → ProblemDetails</td></tr>
+    <tr><td>Persistência</td><td>EF Core 8 + SQL Server 2022, migrations aplicadas no startup</td></tr>
+    <tr><td>Observabilidade</td><td><code>/health</code> (liveness) e <code>/health/ready</code> (readiness com checagem do banco)</td></tr>
+    <tr><td>Testes</td><td>9 testes de integração xUnit com <code>WebApplicationFactory</code> + EF Core InMemory</td></tr>
+  </table>
+
+  <h3>1.2 O que foi adicionado nesta entrega</h3>
+  <ul class="lista">
+    <li><strong>Pipeline CI/CD</strong> em GitHub Actions com 4 jobs encadeados: build, testes, imagem Docker e deploy em dois ambientes.</li>
+    <li><strong>Dockerfile multi-stage</strong> reescrito: stage de testes, usuário não-root, <code>HEALTHCHECK</code> e versionamento da imagem.</li>
+    <li><strong>Três arquivos Docker Compose</strong> (desenvolvimento, staging e produção) com volumes, redes e variáveis de ambiente próprios.</li>
+    <li><strong>Manifests Kubernetes</strong> em Kustomize (base + overlays de staging e produção) com PVC, ConfigMap, Secret, Ingress, HPA e PDB.</li>
+    <li><strong>Health checks</strong> na aplicação, consumidos pelo Docker, pelo Compose e pelas <em>probes</em> do Kubernetes.</li>
+    <li><strong>Smoke tests</strong> pós-deploy em Bash, que validam o ambiente já publicado.</li>
+  </ul>
+</section>
+
+<!-- ============================ 2 ============================ -->
+<section>
+  <h2>2. Arquitetura da solução DevOps</h2>
+
+  <p>O fluxo abaixo descreve o caminho percorrido por um commit até estar rodando
+  em produção. A promoção entre etapas é automática, exceto pelo portão de
+  aprovação manual antes de produção.</p>
+
+<div class="fluxo">      Desenvolvedor
+           |  git push  (main | develop | tag v*)
+           v
+  +=================================================================+
+  |                   GitHub Actions  —  CI/CD                      |
+  |                                                                 |
+  |  [1] build-and-test          (integração contínua)              |
+  |      dotnet restore -> build -> test (xUnit) -> publish         |
+  |      cache NuGet | relatorio .trx | cobertura | artefatos       |
+  |                |  falhou? o pipeline para aqui                  |
+  |                v                                                |
+  |  [2] docker-image            (empacotamento)                    |
+  |      docker buildx (multi-stage) -> push ghcr.io                |
+  |      tags: sha-<commit> | branch | staging | latest | vX.Y.Z    |
+  |                |                                                |
+  |                v                                                |
+  |  [3] deploy-staging          Environment: staging               |
+  |      docker compose -f docker-compose.staging.yml up -d         |
+  |      wait-for-health  ->  smoke tests (7 cenarios)  :8081       |
+  |                |                                                |
+  |                v   [ APROVACAO MANUAL do revisor ]              |
+  |  [4] deploy-production       Environment: production            |
+  |      docker compose -f docker-compose.prod.yml up -d            |
+  |      smoke tests :8080  ->  rollback automatico se falhar       |
+  +=================================================================+
+           |                                   |
+           v                                   v
+  +---------------------+            +----------------------+
+  |   STAGING  :8081    |            |  PRODUCAO  :8080     |
+  |  api  +  SQL Server |            |  api  +  SQL Server  |
+  |  rede/volume/banco  |            |  rede/volume/banco   |
+  |  proprios           |            |  proprios            |
+  +---------------------+            +----------------------+</div>
+
+  <h3>2.1 Princípios aplicados</h3>
+  <table class="dados">
+    <tr><th style="width:30%">Princípio</th><th>Como aparece na solução</th></tr>
+    <tr><td>Build once, deploy many</td><td>A imagem é construída <strong>uma única vez</strong> e a mesma imagem (mesmo digest) é implantada em staging e produção. O que muda é só a configuração injetada por variável de ambiente.</td></tr>
+    <tr><td>Configuração fora do código</td><td>Nenhum segredo na imagem: connection string, chave JWT e credenciais vêm de variáveis de ambiente (12-factor), de GitHub Secrets no pipeline e de <code>Secret</code> no Kubernetes.</td></tr>
+    <tr><td>Fail fast</td><td>Testes rodam antes do empacotamento; se falharem, nenhuma imagem é publicada e nenhum deploy acontece.</td></tr>
+    <tr><td>Validação em produção-like</td><td>Staging é idêntico a produção em imagem e topologia, mudando apenas porta, recursos e nível de log.</td></tr>
+    <tr><td>Reversibilidade</td><td>Toda imagem é versionada por commit (<code>sha-abc1234</code>); o rollback é trocar a tag e subir de novo — automatizado no job de produção.</td></tr>
+    <tr><td>Infraestrutura como código</td><td>Compose, manifests Kubernetes, workflows e scripts versionados junto do código-fonte.</td></tr>
+  </table>
+</section>
+
+<!-- ============================ 3 ============================ -->
+<section>
+  <h2>3. Descrição do pipeline</h2>
+
+  <h3>3.1 Ferramenta escolhida e justificativa</h3>
+  <p><strong>GitHub Actions</strong>, com o <strong>GitHub Container Registry (GHCR)</strong>
+  como registry de imagens. A escolha se apoia em quatro pontos:</p>
+  <ul class="lista">
+    <li><strong>Sem infraestrutura para manter</strong> — diferente do Jenkins, não há servidor, plugins ou agentes a administrar; o runner é efêmero e limpo a cada execução.</li>
+    <li><strong>Registry integrado</strong> — o GHCR autentica com o <code>GITHUB_TOKEN</code> gerado automaticamente, sem cadastrar credenciais externas.</li>
+    <li><strong>Environments com aprovação</strong> — o recurso de <em>required reviewers</em> entrega o portão manual de produção nativamente, sem script.</li>
+    <li><strong>Evidência automática</strong> — logs, relatórios de teste e artefatos ficam anexados a cada execução, o que atende diretamente ao requisito de comprovação da entrega.</li>
+  </ul>
+
+  <h3>3.2 Gatilhos</h3>
+  <table class="dados">
+    <tr><th style="width:34%">Evento</th><th>O que é executado</th></tr>
+    <tr><td><code>push</code> em <code>develop</code></td><td>build + testes + imagem + deploy em <strong>staging</strong></td></tr>
+    <tr><td><code>push</code> em <code>main</code></td><td>tudo acima + deploy em <strong>produção</strong> (após aprovação)</td></tr>
+    <tr><td><code>push</code> de tag <code>v*</code></td><td>idem <code>main</code>, com a imagem versionada (ex.: <code>v1.0.0</code>)</td></tr>
+    <tr><td><code>pull_request</code> para <code>main</code></td><td>somente build + testes — não publica imagem nem implanta</td></tr>
+    <tr><td><code>workflow_dispatch</code></td><td>execução manual pelo botão <em>Run workflow</em></td></tr>
+  </table>
+
+  <h3>3.3 Etapas e lógica</h3>
+
+  <div class="etapa">
+    <div class="titulo">Etapa 1 — build-and-test · integração contínua</div>
+    <ul>
+      <li>Instala o .NET 8 SDK e restaura o cache de pacotes NuGet (chave pelo hash dos <code>.csproj</code>).</li>
+      <li><code>dotnet restore</code> → <code>dotnet build -c Release</code>.</li>
+      <li><code>dotnet test</code> executa os 9 testes xUnit gerando relatório <code>.trx</code> e cobertura de código.</li>
+      <li>O relatório é publicado no resumo do job e salvo como artefato <code>resultados-testes</code>.</li>
+      <li><code>dotnet publish</code> gera os binários, salvos como artefato <code>app-publish</code>.</li>
+      <li><strong>Lógica:</strong> este job é o portão de qualidade. Qualquer falha interrompe o pipeline antes de qualquer publicação.</li>
+    </ul>
+  </div>
+
+  <div class="etapa">
+    <div class="titulo">Etapa 2 — docker-image · empacotamento</div>
+    <ul>
+      <li>Configura o Buildx e autentica no GHCR com o <code>GITHUB_TOKEN</code>.</li>
+      <li><code>docker/metadata-action</code> gera as tags automaticamente: <code>sha-&lt;commit&gt;</code>, nome da branch, <code>staging</code>, <code>latest</code> e a versão semântica quando há tag.</li>
+      <li>Build multi-stage com cache de camadas do próprio Actions (<code>type=gha</code>) e push da imagem.</li>
+      <li>Digest e versão publicados no resumo do job.</li>
+      <li><strong>Lógica:</strong> o artefato implantável passa a ser a imagem imutável, identificada pelo commit que a originou.</li>
+    </ul>
+  </div>
+
+  <div class="etapa">
+    <div class="titulo">Etapa 3 — deploy-staging · entrega contínua</div>
+    <ul>
+      <li>Usa o GitHub Environment <code>staging</code>.</li>
+      <li>Monta o <code>.env.staging</code> a partir dos secrets do repositório (com valores padrão de estudo como <em>fallback</em>).</li>
+      <li>Sobe a stack com <code>docker compose -f docker-compose.staging.yml up -d</code> usando a imagem recém-publicada.</li>
+      <li><code>scripts/wait-for-health.sh</code> aguarda <code>/health</code> responder 200 (até 240 s).</li>
+      <li><code>scripts/smoke-test.sh</code> valida 7 cenários reais no ambiente no ar.</li>
+      <li>Logs, <code>docker compose ps</code> e o JSON do health são salvos como artefato de evidência.</li>
+      <li><strong>Lógica:</strong> staging prova que a imagem sobe e responde de verdade — não apenas que compila.</li>
+    </ul>
+  </div>
+
+  <div class="etapa">
+    <div class="titulo">Etapa 4 — deploy-production · deploy contínuo com portão</div>
+    <ul>
+      <li>Depende do sucesso de staging e só roda em <code>main</code> ou em tags <code>v*</code>.</li>
+      <li>O Environment <code>production</code> está configurado com <em>required reviewers</em>: o job fica em <em>Waiting</em> até a aprovação manual.</li>
+      <li>Sobe <code>docker-compose.prod.yml</code> na porta 8080 e repete os smoke tests.</li>
+      <li><strong>Rollback automático:</strong> se os smoke tests falharem, o passo <code>if: failure()</code> recoloca a tag <code>latest</code> (última imagem estável) e recria o container.</li>
+      <li>Evidências retidas por 30 dias.</li>
+    </ul>
+  </div>
+
+  <h3>3.4 Os 7 cenários dos smoke tests</h3>
+  <table class="dados">
+    <tr><th class="centro" style="width:8%">#</th><th style="width:52%">Verificação</th><th>Esperado</th></tr>
+    <tr><td class="centro">1</td><td><code>GET /health</code> — liveness</td><td>HTTP 200</td></tr>
+    <tr><td class="centro">2</td><td><code>GET /health/ready</code> — readiness com banco</td><td>HTTP 200</td></tr>
+    <tr><td class="centro">3</td><td><code>GET /swagger/v1/swagger.json</code> — contrato OpenAPI</td><td>HTTP 200</td></tr>
+    <tr><td class="centro">4</td><td><code>GET /api/normas?pageNumber=1&amp;pageSize=5</code> — listagem paginada</td><td>HTTP 200</td></tr>
+    <tr><td class="centro">5</td><td><code>POST /api/auth/login</code> com credencial válida</td><td>token JWT no corpo</td></tr>
+    <tr><td class="centro">6</td><td><code>POST /api/auth/login</code> com senha errada</td><td>HTTP 401</td></tr>
+    <tr><td class="centro">7</td><td><code>POST /api/normas</code> sem token</td><td>HTTP 401</td></tr>
+  </table>
+
+  <h3>3.5 Workflow auxiliar — validação dos manifests Kubernetes</h3>
+  <p>O arquivo <code>.github/workflows/k8s-validate.yml</code> roda a cada alteração em
+  <code>k8s/</code>: renderiza os dois overlays com <code>kubectl kustomize</code> e valida
+  os manifests gerados com <code>kubeconform -strict</code> contra os schemas oficiais do
+  Kubernetes 1.29 — erros de manifesto aparecem no pull request, não no <code>apply</code>.</p>
+</section>
+
+<!-- ============================ 4 ============================ -->
+<section>
+  <h2>4. Docker: arquitetura, comandos e imagem</h2>
+
+  <h3>4.1 Arquitetura da imagem (multi-stage)</h3>
+
+<div class="fluxo">  mcr.microsoft.com/dotnet/sdk:8.0                  (~800 MB, so no build)
+  +-------------------------------------------------------------------+
+  | [1] restore  COPY *.csproj  ->  dotnet restore                     |
+  |              camada cacheada enquanto as dependencias nao mudam    |
+  +-------------------------------------------------------------------+
+                 |
+  +--------------v----------------------------------------------------+
+  | [2] build    COPY . .  ->  dotnet build -c Release                 |
+  +-------------------------------------------------------------------+
+         |                                   |
+  +------v---------------------+   +---------v--------------------------+
+  | [3] test                   |   | [4] publish                        |
+  |     dotnet test (xUnit)    |   |     dotnet publish -o /app/publish |
+  |     alvo opcional do build |   |     /p:UseAppHost=false            |
+  +----------------------------+   +---------+--------------------------+
+                                             |
+  mcr.microsoft.com/dotnet/aspnet:8.0        v          (~220 MB, runtime)
+  +-------------------------------------------------------------------+
+  | [5] final                                                          |
+  |     COPY --from=publish --chown=appuser:appgroup                   |
+  |     usuario nao-root (uid 1001)                                    |
+  |     ENV ASPNETCORE_URLS=http://+:8080                              |
+  |     HEALTHCHECK curl -f http://localhost:8080/health               |
+  |     ENTRYPOINT ["dotnet", "GovAmbiental.API.dll"]                  |
+  +-------------------------------------------------------------------+</div>
+
+  <h3>4.2 Estratégias adotadas</h3>
+  <table class="dados">
+    <tr><th style="width:30%">Estratégia</th><th>Motivação</th></tr>
+    <tr><td>Multi-stage build</td><td>O SDK não vai para a imagem final: apenas o runtime ASP.NET e os binários publicados, reduzindo drasticamente tamanho e superfície de ataque.</td></tr>
+    <tr><td>Camada de restore isolada</td><td>Os <code>.csproj</code> são copiados antes do código-fonte; enquanto as dependências não mudam, o <code>dotnet restore</code> vem do cache.</td></tr>
+    <tr><td>Stage <code>test</code> dedicado</td><td><code>docker build --target test .</code> executa os testes dentro do container, com o mesmo resultado em qualquer máquina.</td></tr>
+    <tr><td>Usuário não-root</td><td><code>appuser</code> (uid 1001) e <code>allowPrivilegeEscalation: false</code> no Kubernetes: o processo não roda como root.</td></tr>
+    <tr><td><code>HEALTHCHECK</code> nativo</td><td>O Docker sabe se a API está saudável; o Compose usa isso em <code>depends_on: service_healthy</code>.</td></tr>
+    <tr><td>Configuração por ambiente</td><td>A mesma imagem atende dev, staging e produção — só mudam as variáveis injetadas.</td></tr>
+    <tr><td><code>.dockerignore</code> enxuto</td><td><code>bin/</code>, <code>obj/</code>, <code>.git/</code>, <code>docs/</code> e <code>entrega/</code> ficam fora do contexto de build.</td></tr>
+    <tr><td>Cache <code>type=gha</code></td><td>As camadas são reaproveitadas entre execuções do pipeline.</td></tr>
+    <tr><td><code>ARG APP_VERSION</code> + labels OCI</td><td>A versão implantada é visível no endpoint <code>/health</code> e nos metadados da imagem.</td></tr>
+  </table>
+
+  <h3>4.3 Comandos utilizados</h3>
+<pre><span class="c"># build da imagem, com a versão gravada nos metadados</span>
+docker build -t govambiental-api:local --build-arg APP_VERSION=1.0.0 .
+
+<span class="c"># executar a bateria de testes dentro do container</span>
+docker build --target test .
+
+<span class="c"># subir o ambiente completo (API + SQL Server)</span>
+docker compose up -d --build
+docker compose ps
+docker compose logs -f api
+
+<span class="c"># staging e produção lado a lado, na mesma máquina</span>
+docker compose --env-file .env.staging -f docker-compose.staging.yml up -d
+docker compose --env-file .env.prod    -f docker-compose.prod.yml    up -d
+
+<span class="c"># inspecionar a saúde e a imagem</span>
+docker inspect --format '{{json .State.Health}}' govambiental-api-prod
+docker images ghcr.io/&lt;usuario&gt;/govambiental-api
+
+<span class="c"># publicar manualmente no registry (o pipeline faz isso automaticamente)</span>
+echo $GHCR_TOKEN | docker login ghcr.io -u &lt;usuario&gt; --password-stdin
+docker tag govambiental-api:local ghcr.io/&lt;usuario&gt;/govambiental-api:v1.0.0
+docker push ghcr.io/&lt;usuario&gt;/govambiental-api:v1.0.0
+
+<span class="c"># encerrar</span>
+docker compose down        <span class="c"># preserva o volume do banco</span>
+docker compose down -v     <span class="c"># remove também os dados</span></pre>
+
+  <h3>4.4 Imagem criada</h3>
+  <table class="dados">
+    <tr><th style="width:30%">Item</th><th>Valor</th></tr>
+    <tr><td>Registry</td><td><code>ghcr.io</code> (GitHub Container Registry)</td></tr>
+    <tr><td>Repositório da imagem</td><td><code>ghcr.io/&lt;SEU-USUARIO&gt;/govambiental-api</code></td></tr>
+    <tr><td>Imagem base de build</td><td><code>mcr.microsoft.com/dotnet/sdk:8.0</code></td></tr>
+    <tr><td>Imagem base de runtime</td><td><code>mcr.microsoft.com/dotnet/aspnet:8.0</code></td></tr>
+    <tr><td>Tags geradas</td><td><code>sha-&lt;commit&gt;</code> · <code>main</code> / <code>develop</code> · <code>staging</code> · <code>latest</code> · <code>vX.Y.Z</code></td></tr>
+    <tr><td>Porta exposta</td><td><code>8080</code> (interna ao container, mapeada para 8080/8081 no host)</td></tr>
+    <tr><td>Usuário de execução</td><td><code>appuser</code> (uid 1001, não-root)</td></tr>
+    <tr><td>Health check</td><td><code>curl -f http://localhost:8080/health</code> a cada 15 s</td></tr>
+  </table>
+
+  <h3>4.5 Orquestração — Compose e Kubernetes</h3>
+  <table class="dados">
+    <tr><th style="width:26%">Arquivo</th><th class="centro" style="width:16%">Ambiente</th><th class="centro" style="width:10%">Porta</th><th>Destaques</th></tr>
+    <tr><td><code>docker-compose.yml</code></td><td class="centro">dev</td><td class="centro">8080</td><td>build local, banco exposto em 1433 para inspeção</td></tr>
+    <tr><td><code>docker-compose.staging.yml</code></td><td class="centro">staging</td><td class="centro">8081</td><td>imagem do GHCR, limites de recurso, rotação de logs, banco sem porta no host</td></tr>
+    <tr><td><code>docker-compose.prod.yml</code></td><td class="centro">produção</td><td class="centro">8080</td><td><code>restart: always</code>, <code>no-new-privileges</code>, reservas de CPU/memória, senhas obrigatórias</td></tr>
+  </table>
+
+  <p>Os três requisitos de composição do ambiente estão cobertos:
+  <strong>volumes</strong> (volume nomeado por ambiente montado em <code>/var/opt/mssql</code>,
+  preservando os dados entre <code>down</code> e <code>up</code>),
+  <strong>variáveis de ambiente</strong> (tudo que muda entre ambientes vem de arquivos
+  <code>.env</code>, com <code>${VAR:?mensagem}</code> falhando cedo se faltar uma senha) e
+  <strong>redes</strong> (uma bridge dedicada por ambiente; a API acessa o banco pelo nome
+  do serviço e, em staging e produção, o banco não publica porta no host).</p>
+
+  <p>Como alternativa completa, a pasta <code>k8s/</code> traz os manifests em Kustomize:
+  <code>Deployment</code> com <em>rolling update</em> e três <em>probes</em>,
+  <code>StatefulSet</code> do SQL Server com <code>PersistentVolumeClaim</code> de 5 Gi,
+  <code>ConfigMap</code> e <code>Secret</code>, <code>Service</code>, <code>Ingress</code> e,
+  em produção, <code>HorizontalPodAutoscaler</code> (2 a 5 réplicas por CPU) e
+  <code>PodDisruptionBudget</code>, em namespaces separados por ambiente.</p>
+</section>
+
+<!-- ============================ 5 ============================ -->
+<section>
+  <h2>5. Evidências — pipeline em execução</h2>
+  <p>Os prints abaixo comprovam as etapas de build, testes e deploy. Os arquivos
+  de imagem ficam em <code>docs/evidencias/</code> com os nomes indicados.</p>
+
+  <figure class="evidencia">
+    <figcaption>Figura 1 — Pipeline completo com todos os jobs concluídos</figcaption>
+    <div class="como">Aba <strong>Actions</strong> → execução do workflow “CI/CD - GovAmbiental API”, mostrando os 4 jobs encadeados em verde.</div>
+    <img src="evidencias/01-pipeline-completo.png" alt="Pipeline completo">
+    <div class="placeholder">Espaço reservado para o print<span class="arquivo">docs/evidencias/01-pipeline-completo.png</span></div>
+  </figure>
+
+  <figure class="evidencia">
+    <figcaption>Figura 2 — Etapa de build e testes automatizados</figcaption>
+    <div class="como">Job <strong>Build e testes automatizados</strong>, com o passo <code>dotnet test</code> expandido mostrando os 9 testes aprovados.</div>
+    <img src="evidencias/02-build-testes.png" alt="Build e testes">
+    <div class="placeholder">Espaço reservado para o print<span class="arquivo">docs/evidencias/02-build-testes.png</span></div>
+  </figure>
+
+  <figure class="evidencia">
+    <figcaption>Figura 3 — Imagem Docker publicada no GHCR</figcaption>
+    <div class="como">Aba <strong>Packages</strong> do repositório (ou o resumo do job <em>Build e push da imagem Docker</em>) com as tags geradas.</div>
+    <img src="evidencias/03-imagem-ghcr.png" alt="Imagem no GHCR">
+    <div class="placeholder">Espaço reservado para o print<span class="arquivo">docs/evidencias/03-imagem-ghcr.png</span></div>
+  </figure>
+
+  <figure class="evidencia">
+    <figcaption>Figura 4 — Deploy em staging com smoke tests aprovados</figcaption>
+    <div class="como">Job <strong>Deploy em STAGING</strong>, passo <em>Smoke tests</em> expandido: “7/7 verificações passaram”.</div>
+    <img src="evidencias/04-deploy-staging.png" alt="Deploy staging">
+    <div class="placeholder">Espaço reservado para o print<span class="arquivo">docs/evidencias/04-deploy-staging.png</span></div>
+  </figure>
+
+  <figure class="evidencia">
+    <figcaption>Figura 5 — Aprovação manual do deploy de produção</figcaption>
+    <div class="como">Tela <em>Review deployments</em> do Environment <code>production</code>, com o job aguardando aprovação.</div>
+    <img src="evidencias/05-aprovacao-producao.png" alt="Aprovação de produção">
+    <div class="placeholder">Espaço reservado para o print<span class="arquivo">docs/evidencias/05-aprovacao-producao.png</span></div>
+  </figure>
+
+  <figure class="evidencia">
+    <figcaption>Figura 6 — Deploy em produção concluído</figcaption>
+    <div class="como">Job <strong>Deploy em PRODUÇÃO</strong> finalizado, com os smoke tests aprovados na porta 8080.</div>
+    <img src="evidencias/06-deploy-producao.png" alt="Deploy produção">
+    <div class="placeholder">Espaço reservado para o print<span class="arquivo">docs/evidencias/06-deploy-producao.png</span></div>
+  </figure>
+</section>
+
+<!-- ============================ 6 ============================ -->
+<section>
+  <h2>6. Evidências — ambientes em funcionamento</h2>
+
+  <figure class="evidencia">
+    <figcaption>Figura 7 — Containers em execução e saudáveis</figcaption>
+    <div class="como">Terminal com <code>docker compose ps</code>: os serviços <code>api</code> e <code>db</code> com status <em>healthy</em>.</div>
+    <img src="evidencias/07-containers-healthy.png" alt="Containers healthy">
+    <div class="placeholder">Espaço reservado para o print<span class="arquivo">docs/evidencias/07-containers-healthy.png</span></div>
+  </figure>
+
+  <figure class="evidencia">
+    <figcaption>Figura 8 — Staging no ar (porta 8081)</figcaption>
+    <div class="como">Navegador em <code>http://localhost:8081/swagger</code> — Swagger da API rodando em staging.</div>
+    <img src="evidencias/08-staging-swagger.png" alt="Swagger staging">
+    <div class="placeholder">Espaço reservado para o print<span class="arquivo">docs/evidencias/08-staging-swagger.png</span></div>
+  </figure>
+
+  <figure class="evidencia">
+    <figcaption>Figura 9 — Produção no ar (porta 8080)</figcaption>
+    <div class="como">Navegador em <code>http://localhost:8080/swagger</code> — mesma imagem, ambiente de produção.</div>
+    <img src="evidencias/09-producao-swagger.png" alt="Swagger produção">
+    <div class="placeholder">Espaço reservado para o print<span class="arquivo">docs/evidencias/09-producao-swagger.png</span></div>
+  </figure>
+
+  <figure class="evidencia">
+    <figcaption>Figura 10 — Health check respondendo nos dois ambientes</figcaption>
+    <div class="como"><code>curl http://localhost:8081/health</code> e <code>curl http://localhost:8080/health</code> lado a lado, mostrando o campo <code>ambiente</code> diferente em cada um.</div>
+    <img src="evidencias/10-health-ambientes.png" alt="Health nos dois ambientes">
+    <div class="placeholder">Espaço reservado para o print<span class="arquivo">docs/evidencias/10-health-ambientes.png</span></div>
+  </figure>
+
+  <div class="nota">
+    <strong>Evidências automáticas.</strong> Além dos prints, cada execução do pipeline
+    anexa artefatos de comprovação: <code>resultados-testes</code> (relatório <code>.trx</code>
+    e cobertura), <code>evidencias-staging</code> e <code>evidencias-producao</code>
+    (saída de <code>docker compose ps</code>, logs completos dos containers e o JSON do
+    endpoint <code>/health</code> de cada ambiente).
+  </div>
+</section>
+
+<!-- ============================ 7 ============================ -->
+<section>
+  <h2>7. Desafios encontrados e como foram resolvidos</h2>
+
+  <table class="dados">
+    <tr><th style="width:38%">Desafio</th><th>Solução aplicada</th></tr>
+    <tr>
+      <td><strong>A API subia antes do SQL Server</strong> e quebrava ao aplicar as migrations, derrubando o container logo no start.</td>
+      <td><code>healthcheck</code> no serviço <code>db</code> com <code>sqlcmd</code> + <code>depends_on: condition: service_healthy</code>; <code>EnableRetryOnFailure</code> no EF Core; e um laço de retry com <em>backoff</em> de 5 s (10 tentativas) em volta do <code>MigrateAsync()</code>, com log de cada tentativa.</td>
+    </tr>
+    <tr>
+      <td><strong>O Docker não sabia se a aplicação estava realmente pronta</strong> — o container aparecia “running” antes de a API aceitar requisições.</td>
+      <td>Criação dos endpoints <code>/health</code> (liveness, sem tocar no banco) e <code>/health/ready</code> (readiness, com <code>CanConnectAsync</code>), usando apenas o pacote de health checks já embutido no ASP.NET Core. Eles alimentam o <code>HEALTHCHECK</code> do Docker, o <code>service_healthy</code> do Compose e as três <em>probes</em> do Kubernetes.</td>
+    </tr>
+    <tr>
+      <td><strong>“Passou no build” não significa “está no ar”</strong>: o pipeline poderia ficar verde com um ambiente quebrado.</td>
+      <td>Smoke tests pós-deploy em Bash (<code>scripts/smoke-test.sh</code>) cobrindo 7 cenários reais — incluindo autenticação JWT e rejeição de acesso sem token. O job falha se qualquer verificação falhar.</td>
+    </tr>
+    <tr>
+      <td><strong>Segredos não podem ir para a imagem nem para o Git</strong>, mas a aplicação precisa deles em tempo de execução.</td>
+      <td>Configuração inteiramente por variável de ambiente (<code>Jwt__Key</code>, <code>ConnectionStrings__DefaultConnection</code>), arquivos <code>.env</code> no <code>.gitignore</code>, <code>.env.example</code> versionado como modelo, GitHub Secrets no pipeline e <code>Secret</code> no Kubernetes.</td>
+    </tr>
+    <tr>
+      <td><strong>Staging e produção colidiam</strong> ao rodar na mesma máquina: mesma porta, mesmo volume, mesmo nome de container.</td>
+      <td>Isolamento completo por ambiente — <code>name:</code> de projeto, rede bridge, volume nomeado, banco de dados, nome de container e porta próprios (8081 × 8080). Os dois ambientes rodam simultaneamente sem interferência.</td>
+    </tr>
+    <tr>
+      <td><strong>Deploy automático em produção é arriscado demais</strong> para uma aplicação de compliance.</td>
+      <td>GitHub Environment <code>production</code> com <em>required reviewers</em>: o pipeline pausa e aguarda aprovação humana. Em caso de falha nos smoke tests, o passo <code>if: failure()</code> faz rollback automático para a tag <code>latest</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>Build lento da imagem</strong> a cada commit, repetindo restore e download de pacotes.</td>
+      <td>Multi-stage com camada de restore separada, cache de camadas do Buildx (<code>type=gha</code>) e cache de pacotes NuGet no runner com chave pelo hash dos <code>.csproj</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>A imagem do SQL Server não roda nativamente em Apple Silicon</strong>, quebrando a execução local no Mac.</td>
+      <td><code>platform: ${DB_PLATFORM:-linux/amd64}</code> nos três arquivos Compose: emulação no Mac, execução nativa no runner Linux do GitHub — o mesmo arquivo serve aos dois cenários.</td>
+    </tr>
+    <tr>
+      <td><strong>Erros nos manifests do Kubernetes só apareciam na hora do <code>apply</code></strong>, já no cluster.</td>
+      <td>Workflow <code>k8s-validate.yml</code>: <code>kubectl kustomize</code> renderiza os dois overlays e <code>kubeconform -strict</code> valida contra os schemas oficiais do Kubernetes 1.29, a cada push em <code>k8s/</code>.</td>
+    </tr>
+  </table>
+</section>
+
+<!-- ============================ 8 ============================ -->
+<section>
+  <h2>8. Checklist de entrega</h2>
+
+  <table class="dados">
+    <tr>
+      <th class="centro" style="width:7%">#</th>
+      <th style="width:38%">Item obrigatório</th>
+      <th class="centro" style="width:10%">Status</th>
+      <th>Onde está</th>
+    </tr>
+    <tr>
+      <td class="centro">1</td>
+      <td>Projeto compactado em <code>.ZIP</code> com estrutura organizada</td>
+      <td class="centro ok">☑</td>
+      <td><code>entrega/govambiental-devops.zip</code> — inclui <code>src/</code>, <code>tests/</code>, <code>Dockerfile</code>, arquivos Compose, <code>k8s/</code>, <code>.github/workflows/</code>, <code>scripts/</code>, <code>.env.example</code>, <code>README.md</code> e <code>docs/</code></td>
+    </tr>
+    <tr>
+      <td class="centro">2</td>
+      <td>Dockerfile funcional</td>
+      <td class="centro ok">☑</td>
+      <td><code>Dockerfile</code> — multi-stage (restore · build · test · publish · final), usuário não-root, <code>HEALTHCHECK</code> e labels OCI</td>
+    </tr>
+    <tr>
+      <td class="centro">3</td>
+      <td><code>docker-compose.yml</code> ou arquivos Kubernetes</td>
+      <td class="centro ok">☑</td>
+      <td>Ambos: <code>docker-compose.yml</code>, <code>docker-compose.staging.yml</code>, <code>docker-compose.prod.yml</code> <strong>e</strong> <code>k8s/base/</code> + <code>k8s/overlays/{staging,production}/</code></td>
+    </tr>
+    <tr>
+      <td class="centro">4</td>
+      <td>Pipeline com etapas de build, teste e deploy</td>
+      <td class="centro ok">☑</td>
+      <td><code>.github/workflows/ci-cd.yml</code> — 4 jobs: <em>build-and-test</em> → <em>docker-image</em> → <em>deploy-staging</em> → <em>deploy-production</em></td>
+    </tr>
+    <tr>
+      <td class="centro">5</td>
+      <td><code>README.md</code> com instruções e prints</td>
+      <td class="centro ok">☑</td>
+      <td><code>README.md</code> — 13 seções, incluindo execução local com Docker, pipeline, containerização, evidências e tecnologias</td>
+    </tr>
+    <tr>
+      <td class="centro">6</td>
+      <td>Documentação técnica com evidências (PDF ou PPT)</td>
+      <td class="centro ok">☑</td>
+      <td>Este documento — <code>docs/documentacao-tecnica.pdf</code></td>
+    </tr>
+    <tr>
+      <td class="centro">7</td>
+      <td>Deploy realizado nos ambientes staging e produção</td>
+      <td class="centro ok">☑</td>
+      <td>Jobs <em>Deploy em STAGING</em> (porta 8081) e <em>Deploy em PRODUÇÃO</em> (porta 8080), ambos com smoke tests — evidências nas figuras 4 a 10</td>
+    </tr>
+  </table>
+
+  <h3>8.1 Tecnologias utilizadas</h3>
+  <table class="dados">
+    <tr><th style="width:26%">Camada</th><th>Stack</th></tr>
+    <tr><td>Aplicação</td><td>C# 12 · ASP.NET Core 8 · EF Core 8 · FluentValidation 11 · JWT Bearer · Swagger/OpenAPI</td></tr>
+    <tr><td>Banco de dados</td><td>Microsoft SQL Server 2022 (container) · migrations EF Core · EF Core InMemory nos testes</td></tr>
+    <tr><td>Testes</td><td>xUnit 2.9 · <code>Microsoft.AspNetCore.Mvc.Testing</code> · Coverlet</td></tr>
+    <tr><td>Containerização</td><td>Docker (multi-stage, não-root, HEALTHCHECK) · Docker Buildx · <code>.dockerignore</code></td></tr>
+    <tr><td>Orquestração</td><td>Docker Compose v2 (3 ambientes) · Kubernetes + Kustomize (PVC, ConfigMap, Secret, Ingress, HPA, PDB)</td></tr>
+    <tr><td>CI/CD</td><td>GitHub Actions · GitHub Container Registry · Environments com aprovação · caches de NuGet e de camadas · artefatos de evidência</td></tr>
+    <tr><td>Qualidade e operação</td><td>Health checks ASP.NET Core · smoke tests em Bash · kubeconform · rollback automático</td></tr>
+  </table>
+
+  <div class="rodape-doc">
+    Documentação técnica — API de Governança e Compliance Ambiental (ESG)<br>
+    Gustavo Silva Torres · RM564909 · FIAP — Navegando pelo mundo DevOps
+  </div>
+</section>
+
+<script>
+  // Cada figura mostra o print quando o arquivo existe em docs/evidencias/;
+  // caso contrário, exibe o espaço reservado com o nome esperado do arquivo.
+  document.querySelectorAll('figure.evidencia').forEach(function (fig) {
+    var img = fig.querySelector('img');
+    var placeholder = fig.querySelector('.placeholder');
+    img.style.display = 'none';
+    img.addEventListener('load', function () {
+      img.style.display = 'block';
+      placeholder.style.display = 'none';
+    });
+    img.addEventListener('error', function () {
+      img.remove();
+    });
+    if (img.complete && img.naturalWidth > 0) {
+      img.style.display = 'block';
+      placeholder.style.display = 'none';
+    }
+  });
+</script>
+
+</body>
+</html>

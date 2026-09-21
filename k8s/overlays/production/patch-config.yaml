@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: govambiental-api-config
+data:
+  Logging__LogLevel__Default: "Warning"
+  Logging__LogLevel__Microsoft.AspNetCore: "Warning"

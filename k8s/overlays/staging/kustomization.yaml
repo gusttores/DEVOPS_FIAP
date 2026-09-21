@@ -1,0 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# Ambiente de STAGING
+#   kubectl apply -k k8s/overlays/staging
+#   kubectl -n govambiental-staging get pods,svc,ingress
+namespace: govambiental-staging
+
+resources:
+  - namespace.yaml
+  - ../../base
+
+commonLabels:
+  ambiente: staging
+
+images:
+  - name: ghcr.io/SEU-USUARIO/govambiental-api
+    newTag: staging
+
+patches:
+  - path: patch-api.yaml
+  - path: patch-ingress.yaml
+  - path: patch-config.yaml

@@ -1,0 +1,78 @@
+# =============================================================================
+# Ambiente de STAGING
+#   docker compose --env-file .env.staging -f docker-compose.staging.yml up -d
+#   API ..... http://localhost:8081/swagger
+#
+# Diferenças para produção: porta 8081, ASPNETCORE_ENVIRONMENT=Staging,
+# Swagger habilitado, limites de recurso menores e volume/rede próprios
+# (os dois ambientes rodam lado a lado sem colidir).
+# =============================================================================
+name: govambiental-staging
+
+services:
+  db:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: govambiental-db-staging
+    platform: ${DB_PLATFORM:-linux/amd64}
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: ${SA_PASSWORD:?defina SA_PASSWORD no .env.staging}
+      MSSQL_PID: "Developer"
+    volumes:
+      - govambiental-db-staging:/var/opt/mssql
+    networks:
+      - govambiental-staging
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -No -Q \"SELECT 1\" || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 2g
+
+  api:
+    # A imagem vem do GitHub Container Registry, publicada pelo pipeline.
+    # Localmente, use IMAGE_TAG=local depois de `docker build -t ... .`
+    image: ${IMAGE_NAME:-ghcr.io/gustavo-torres/govambiental-api}:${IMAGE_TAG:-staging}
+    container_name: govambiental-api-staging
+    pull_policy: ${PULL_POLICY:-always}
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: Staging
+      ASPNETCORE_URLS: http://+:8080
+      APP_VERSION: ${IMAGE_TAG:-staging}
+      ConnectionStrings__DefaultConnection: "Server=db,1433;Database=${DB_NAME:-GovAmbientalDb_Staging};User Id=sa;Password=${SA_PASSWORD};TrustServerCertificate=True;Encrypt=False"
+      Jwt__Key: ${JWT_KEY:?defina JWT_KEY no .env.staging}
+      Jwt__Issuer: ${JWT_ISSUER:-GovAmbiental.API}
+      Jwt__Audience: ${JWT_AUDIENCE:-GovAmbiental.Clients}
+      AuthCredentials__Email: ${AUTH_EMAIL:-auditor@govambiental.com}
+      AuthCredentials__Senha: ${AUTH_PASSWORD:?defina AUTH_PASSWORD no .env.staging}
+    ports:
+      - "${API_PORT:-8081}:8080"
+    networks:
+      - govambiental-staging
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          cpus: "1.0"
+          memory: 512m
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  govambiental-staging:
+    driver: bridge
+
+volumes:
+  govambiental-db-staging:
+    driver: local
