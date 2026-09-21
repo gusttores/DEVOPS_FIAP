@@ -23,7 +23,10 @@ on:
 env:
   DOTNET_VERSION: "8.0.x"
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository_owner }}/govambiental-api
+  # Nome do repositorio da imagem. NAO pode se chamar IMAGE_NAME: o docker compose
+  # da precedencia ao ambiente do shell sobre o --env-file, e sobrescreveria o
+  # IMAGE_NAME (com registry) escrito nos arquivos .env dos ambientes.
+  IMAGE_REPO: ${{ github.repository_owner }}/govambiental-api
   SOLUTION: GovAmbiental.sln
   TEST_PROJECT: tests/GovAmbiental.Tests/GovAmbiental.Tests.csproj
 
@@ -137,7 +140,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_REPO }}
           tags: |
             type=sha,format=short
             type=ref,event=branch
@@ -168,7 +171,7 @@ jobs:
             echo "| Item | Valor |"
             echo "|---|---|"
             echo "| Registry | \`${{ env.REGISTRY }}\` |"
-            echo "| Imagem | \`${{ env.IMAGE_NAME }}\` |"
+            echo "| Imagem | \`${{ env.IMAGE_REPO }}\` |"
             echo "| Versão | \`${{ steps.meta.outputs.version }}\` |"
             echo "| Digest | \`${{ steps.build.outputs.digest }}\` |"
           } >> "$GITHUB_STEP_SUMMARY"
@@ -203,7 +206,7 @@ jobs:
       - name: Gerar arquivo de ambiente (.env.staging)
         run: |
           cat > .env.staging <<EOF
-          IMAGE_NAME=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          IMAGE_NAME=${{ env.REGISTRY }}/${{ env.IMAGE_REPO }}
           IMAGE_TAG=${{ needs.docker-image.outputs.version }}
           PULL_POLICY=always
           DB_PLATFORM=linux/amd64
@@ -250,7 +253,7 @@ jobs:
           {
             echo "### Deploy em STAGING"
             echo ""
-            echo "- Imagem: \`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.docker-image.outputs.version }}\`"
+            echo "- Imagem: \`${{ env.REGISTRY }}/${{ env.IMAGE_REPO }}:${{ needs.docker-image.outputs.version }}\`"
             echo "- URL: http://localhost:8081/swagger"
             echo "- Status: ${{ job.status }}"
           } >> "$GITHUB_STEP_SUMMARY"
@@ -289,7 +292,7 @@ jobs:
       - name: Gerar arquivo de ambiente (.env.prod)
         run: |
           cat > .env.prod <<EOF
-          IMAGE_NAME=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          IMAGE_NAME=${{ env.REGISTRY }}/${{ env.IMAGE_REPO }}
           IMAGE_TAG=${{ needs.docker-image.outputs.version }}
           PULL_POLICY=always
           DB_PLATFORM=linux/amd64
@@ -344,7 +347,7 @@ jobs:
           {
             echo "### Deploy em PRODUÇÃO"
             echo ""
-            echo "- Imagem: \`${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.docker-image.outputs.version }}\`"
+            echo "- Imagem: \`${{ env.REGISTRY }}/${{ env.IMAGE_REPO }}:${{ needs.docker-image.outputs.version }}\`"
             echo "- URL: http://localhost:8080/swagger"
             echo "- Status: ${{ job.status }}"
           } >> "$GITHUB_STEP_SUMMARY"
