@@ -9,7 +9,7 @@ o PDF é regerado com as evidências embutidas.
 | Arquivo | O que capturar | Onde |
 |---|---|---|
 | `01-pipeline-completo.png` | O workflow inteiro concluído, com os 4 jobs em verde | GitHub → aba **Actions** → execução "CI/CD - GovAmbiental API" |
-| `02-build-testes.png` | Passo `dotnet test` expandido, mostrando os 9 testes aprovados | job *Build e testes automatizados* |
+| `02-build-testes.png` | Passo `dotnet test` expandido, mostrando os 25 testes aprovados | job *Build e testes automatizados* |
 | `03-imagem-ghcr.png` | A imagem publicada e suas tags | aba **Packages** do repositório (ou o resumo do job *Build e push da imagem Docker*) |
 | `04-deploy-staging.png` | Passo *Smoke tests* com "7/7 verificações passaram" | job *Deploy em STAGING* |
 | `05-aprovacao-producao.png` | Tela **Review deployments** com o job aguardando aprovação | job *Deploy em PRODUÇÃO* (status *Waiting*) |

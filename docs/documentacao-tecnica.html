@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<title>Documentação Técnica — DevOps · GovAmbiental API</title>
+<title>Documentação Técnica — DevOps · Cidades ESGInteligentes</title>
 <style>
   @page { size: A4; margin: 16mm 14mm 14mm 14mm; }
 
@@ -248,12 +248,12 @@
 <div class="capa">
   <div class="selo">FIAP · Navegando pelo mundo DevOps</div>
   <h1>API de Governança e<br>Compliance Ambiental</h1>
-  <div class="subtitulo">Automação completa do ciclo de vida da aplicação<br>com CI/CD, Docker e Kubernetes</div>
+  <div class="subtitulo">Cidades ESGInteligentes · Automação completa do ciclo de vida<br>com CI/CD, Docker e Kubernetes</div>
   <div class="regua"></div>
 
   <table class="ficha">
     <tr><td>Integrante</td><td>Gustavo Silva Torres — RM564909</td></tr>
-    <tr><td>Tema ESG</td><td>Governança e compliance ambiental</td></tr>
+    <tr><td>Tema ESG</td><td>Cidades ESG Inteligentes — Governança e compliance ambiental</td></tr>
     <tr><td>Aplicação base</td><td>Web API em C# / ASP.NET Core 8 (desafio anterior)</td></tr>
     <tr><td>Ferramenta CI/CD</td><td>GitHub Actions + GitHub Container Registry</td></tr>
     <tr><td>Containerização</td><td>Docker multi-stage · Docker Compose · Kubernetes (Kustomize)</td></tr>
@@ -289,7 +289,7 @@
     <tr><td>Validação e erros</td><td>FluentValidation + filtro global · middleware de exceções → ProblemDetails</td></tr>
     <tr><td>Persistência</td><td>EF Core 8 + SQL Server 2022, migrations aplicadas no startup</td></tr>
     <tr><td>Observabilidade</td><td><code>/health</code> (liveness) e <code>/health/ready</code> (readiness com checagem do banco)</td></tr>
-    <tr><td>Testes</td><td>9 testes de integração xUnit com <code>WebApplicationFactory</code> + EF Core InMemory</td></tr>
+    <tr><td>Testes</td><td>25 testes de integração xUnit com <code>WebApplicationFactory</code> + EF Core InMemory</td></tr>
   </table>
 
   <h3>1.2 O que foi adicionado nesta entrega</h3>
@@ -388,7 +388,7 @@
     <ul>
       <li>Instala o .NET 8 SDK e restaura o cache de pacotes NuGet (chave pelo hash dos <code>.csproj</code>).</li>
       <li><code>dotnet restore</code> → <code>dotnet build -c Release</code>.</li>
-      <li><code>dotnet test</code> executa os 9 testes xUnit gerando relatório <code>.trx</code> e cobertura de código.</li>
+      <li><code>dotnet test</code> executa os 25 testes xUnit gerando relatório <code>.trx</code> e cobertura de código.</li>
       <li>O relatório é publicado no resumo do job e salvo como artefato <code>resultados-testes</code>.</li>
       <li><code>dotnet publish</code> gera os binários, salvos como artefato <code>app-publish</code>.</li>
       <li><strong>Lógica:</strong> este job é o portão de qualidade. Qualquer falha interrompe o pipeline antes de qualquer publicação.</li>
@@ -576,7 +576,7 @@ docker compose down -v     <span class="c"># remove também os dados</span></pre
 
   <figure class="evidencia">
     <figcaption>Figura 2 — Etapa de build e testes automatizados</figcaption>
-    <div class="como">Job <strong>Build e testes automatizados</strong>, com o passo <code>dotnet test</code> expandido mostrando os 9 testes aprovados.</div>
+    <div class="como">Job <strong>Build e testes automatizados</strong>, com o passo <code>dotnet test</code> expandido mostrando os 25 testes aprovados.</div>
     <img src="evidencias/02-build-testes.png" alt="Build e testes">
     <div class="placeholder">Espaço reservado para o print<span class="arquivo">docs/evidencias/02-build-testes.png</span></div>
   </figure>

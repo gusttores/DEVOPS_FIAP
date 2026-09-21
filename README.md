@@ -1,9 +1,9 @@
-# Projeto — API de Governança e Compliance Ambiental (ESG) · DevOps
+# Projeto — Cidades ESGInteligentes: API de Governança e Compliance Ambiental · DevOps
 
 > **Disciplina:** Navegando pelo mundo DevOps — FIAP
 > **Integrante:** Gustavo Silva Torres — RM564909
 > **Aplicação base:** Web API em **C# / ASP.NET Core 8** desenvolvida no desafio
-> anterior, tema ESG *Governança e compliance ambiental*.
+> anterior, tema ESG *Governança e compliance ambiental* no contexto de cidades inteligentes.
 
 Esta entrega adapta a API para um ciclo de vida **completamente automatizado**:
 build, testes, empacotamento em imagem Docker, publicação no registry e deploy
@@ -13,7 +13,7 @@ em **dois ambientes (staging e produção)** — tudo disparado por um `git push
 
 ## Sumário
 
-1. [O que a aplicação faz](#1-o-que-a-aplicação-faz)
+1. [Projeto — Cidades ESGInteligentes](#1-projeto--cidades-esginteligentes)
 2. [Arquitetura da solução DevOps](#2-arquitetura-da-solução-devops)
 3. [Como executar localmente com Docker](#3-como-executar-localmente-com-docker)
 4. [Pipeline CI/CD](#4-pipeline-cicd)
@@ -29,10 +29,10 @@ em **dois ambientes (staging e produção)** — tudo disparado por um `git push
 
 ---
 
-## 1. O que a aplicação faz
+## 1. Projeto — Cidades ESGInteligentes
 
 API RESTful para **registro automático de conformidade com normas ambientais e
-auditorias internas**. O núcleo é um **motor de avaliação**: ao submeter as
+auditorias internas em ecossistemas de cidades inteligentes**. O núcleo é um **motor de avaliação**: ao submeter as
 evidências de uma auditoria, a API calcula um **score ponderado de
 conformidade**, classifica o resultado e **gera automaticamente as
 não-conformidades com seus planos de ação**, com prazos definidos pela
@@ -47,7 +47,7 @@ criticidade de cada requisito.
 | Erros | `ExceptionHandlingMiddleware` → ProblemDetails (404/422/500) |
 | Persistência | EF Core 8 + SQL Server 2022 + migrations automáticas |
 | Observabilidade | `/health` (liveness) e `/health/ready` (readiness com banco) |
-| Testes | 9 testes de integração xUnit + `WebApplicationFactory` |
+| Testes | 25 testes de integração xUnit + `WebApplicationFactory` |
 
 ---
 
@@ -194,7 +194,7 @@ Arquivos: `.github/workflows/ci-cd.yml` e `.github/workflows/k8s-validate.yml`.
 
 - `actions/setup-dotnet` com .NET 8 e **cache dos pacotes NuGet**;
 - `dotnet restore` → `dotnet build -c Release`;
-- `dotnet test` dos 9 testes xUnit, gerando `.trx` e **cobertura de código**;
+- `dotnet test` dos 25 testes xUnit, gerando `.trx` e **cobertura de código**;
 - relatório de testes publicado no resumo do job (`dorny/test-reporter`);
 - `dotnet publish` e upload dos artefatos (`resultados-testes`, `app-publish`).
 - **Se um teste falhar, o pipeline para aqui** — nada é publicado nem implantado.
@@ -413,7 +413,7 @@ dotnet test                              # local
 docker build --target test .             # dentro do container
 ```
 
-9 testes de integração xUnit sobem a API inteira com `WebApplicationFactory`,
+25 testes de integração xUnit sobem a API inteira com `WebApplicationFactory`,
 trocando o SQL Server por **EF Core InMemory** — por isso rodam no runner do
 GitHub Actions sem precisar de banco. Cobrem: status 200 dos 4 controllers,
 autenticação JWT (200/401), paginação e tradução das consultas.
@@ -433,7 +433,7 @@ documentação técnica em PDF (`docs/documentacao-tecnica.pdf`).
 | # | Evidência | Onde capturar |
 |---|---|---|
 | 1 | Pipeline completo verde | aba **Actions** → execução do workflow |
-| 2 | Job de build e testes (9/9 passando) | job *Build e testes automatizados* |
+| 2 | Job de build e testes (25/25 passando) | job *Build e testes automatizados* |
 | 3 | Imagem publicada no GHCR | aba **Packages** do repositório |
 | 4 | Job de deploy em staging + smoke tests | job *Deploy em STAGING* |
 | 5 | Aprovação manual pendente em produção | job *Deploy em PRODUÇÃO* (*Review deployments*) |
@@ -538,7 +538,7 @@ WEBSERVICE_ASP.ET/
 │   ├── smoke-test.sh          # validação pós-deploy (7 cenários)
 │   └── wait-for-health.sh     # espera o /health responder 200
 ├── src/GovAmbiental.API/      # código-fonte da aplicação
-├── tests/GovAmbiental.Tests/  # 9 testes de integração xUnit
+├── tests/GovAmbiental.Tests/  # 25 testes de integração xUnit
 ├── postman/                   # coleção Postman
 ├── Dockerfile
 ├── docker-compose.yml
