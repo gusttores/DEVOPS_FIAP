@@ -30,7 +30,7 @@ spec:
       containers:
         - name: api
           # A tag é substituída pelo overlay (kustomize edit set image).
-          image: ghcr.io/SEU-USUARIO/govambiental-api:latest
+          image: ghcr.io/gusttores/govambiental-api:latest
           imagePullPolicy: IfNotPresent
           ports:
             - name: http

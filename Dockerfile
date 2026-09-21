@@ -78,6 +78,6 @@ HEALTHCHECK --interval=15s --timeout=5s --start-period=40s --retries=5 \
 LABEL org.opencontainers.image.title="GovAmbiental.API" \
       org.opencontainers.image.description="API de Governança e Compliance Ambiental (ESG) — .NET 8" \
       org.opencontainers.image.version="${APP_VERSION}" \
-      org.opencontainers.image.source="https://github.com/gustavo-torres/govambiental-devops"
+      org.opencontainers.image.source="https://github.com/gusttores/DEVOPS_FIAP"
 
 ENTRYPOINT ["dotnet", "GovAmbiental.API.dll"]

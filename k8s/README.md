@@ -39,14 +39,14 @@ kubectl -n govambiental-staging port-forward svc/govambiental-api 8081:80
 curl http://localhost:8081/health
 ```
 
-## Apontar para a sua imagem
+## Apontar para outra versão da imagem
 
-Troque `SEU-USUARIO` pelo seu usuário do GitHub nos dois `kustomization.yaml`,
-ou use o próprio kustomize:
+A imagem já aponta para `ghcr.io/gusttores/govambiental-api` nos dois `kustomization.yaml`.
+Para fixar uma versão específica, use o próprio kustomize:
 
 ```bash
 cd k8s/overlays/production
-kustomize edit set image ghcr.io/SEU-USUARIO/govambiental-api=ghcr.io/SEU-USUARIO/govambiental-api:v1.2.3
+kustomize edit set image ghcr.io/gusttores/govambiental-api=ghcr.io/gusttores/govambiental-api:v1.2.3
 ```
 
 ## Recursos usados por requisito

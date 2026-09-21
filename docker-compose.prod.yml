@@ -35,7 +35,7 @@ services:
           memory: 3g
 
   api:
-    image: ${IMAGE_NAME:-ghcr.io/gustavo-torres/govambiental-api}:${IMAGE_TAG:-latest}
+    image: ${IMAGE_NAME:-ghcr.io/gusttores/govambiental-api}:${IMAGE_TAG:-latest}
     container_name: govambiental-api-prod
     pull_policy: ${PULL_POLICY:-always}
     depends_on:

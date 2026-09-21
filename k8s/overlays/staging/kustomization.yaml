@@ -14,7 +14,7 @@ commonLabels:
   ambiente: staging
 
 images:
-  - name: ghcr.io/SEU-USUARIO/govambiental-api
+  - name: ghcr.io/gusttores/govambiental-api
     newTag: staging
 
 patches:

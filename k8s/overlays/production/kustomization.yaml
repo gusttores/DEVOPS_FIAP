@@ -16,7 +16,7 @@ commonLabels:
   ambiente: producao
 
 images:
-  - name: ghcr.io/SEU-USUARIO/govambiental-api
+  - name: ghcr.io/gusttores/govambiental-api
     newTag: latest
 
 patches:

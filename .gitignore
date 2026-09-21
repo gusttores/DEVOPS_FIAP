@@ -33,3 +33,6 @@ docs/evidencias/*.tmp
 ## Pacotes de entrega (gerados)
 entrega/
 entrega.zip
+
+## Pasta gerada pelo app do Claude
+Claude outputs/

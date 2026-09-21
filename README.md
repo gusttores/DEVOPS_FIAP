@@ -235,10 +235,8 @@ gerados contra os schemas oficiais do Kubernetes com `kubeconform -strict`.
 ### 4.3 Como ligar o pipeline no seu repositório
 
 ```bash
-# 1) publicar o código
-git init && git add . && git commit -m "feat: pipeline CI/CD, Docker e Kubernetes"
-git branch -M main
-git remote add origin https://github.com/<SEU-USUARIO>/govambiental-devops.git
+# 1) publicar o código (repositório já configurado)
+git remote add origin https://github.com/gusttores/DEVOPS_FIAP.git
 git push -u origin main
 ```
 

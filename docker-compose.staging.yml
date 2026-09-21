@@ -37,7 +37,7 @@ services:
   api:
     # A imagem vem do GitHub Container Registry, publicada pelo pipeline.
     # Localmente, use IMAGE_TAG=local depois de `docker build -t ... .`
-    image: ${IMAGE_NAME:-ghcr.io/gustavo-torres/govambiental-api}:${IMAGE_TAG:-staging}
+    image: ${IMAGE_NAME:-ghcr.io/gusttores/govambiental-api}:${IMAGE_TAG:-staging}
     container_name: govambiental-api-staging
     pull_policy: ${PULL_POLICY:-always}
     depends_on:
